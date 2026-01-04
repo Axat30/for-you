@@ -36,13 +36,25 @@ Thank you for being you.
 Thank you for being a part of my life.
 
 And once again,
-Happy Birthday to the person who means more to me than she knows 
-`
+Happy Birthday to the person who means more to me than she knows`
 
 export default function MessageScreen({ onNext }) {
   const [currentText, setCurrentText] = useState("")
   const [showCursor, setShowCursor] = useState(true)
+  const [autoScroll, setAutoScroll] = useState(true)
+
   const scrollRef = useRef(null)
+
+  // Detect manual scroll
+  const handleScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const isAtBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 20
+
+    setAutoScroll(isAtBottom)
+  }
 
   useEffect(() => {
     let index = 0
@@ -52,85 +64,77 @@ export default function MessageScreen({ onNext }) {
         setCurrentText(prev => prev + message[index])
         index++
 
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        // auto-scroll ONLY if user didn't scroll up
+        if (autoScroll && scrollRef.current) {
+          scrollRef.current.scrollTop =
+            scrollRef.current.scrollHeight
         }
       } else {
         clearInterval(timer)
         setShowCursor(false)
       }
-    }, 22)
+    }, 1)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [autoScroll])
 
   return (
     <motion.div className="flex flex-col items-center justify-center px-4 relative">
 
       {/* Heading */}
       <motion.h2
-        className="text-4xl md:text-5xl font-dancing-script text-pink-100 font-semibold leading-tight mb-8 text-center"
+        className="text-4xl md:text-5xl font-dancing-script text-pink-100 font-semibold mb-8 text-center"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
       >
         A little note for you
       </motion.h2>
 
       {/* Message Box */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
         className="
-          w-full max-w-lg
-          relative p-6 rounded-3xl
+          w-full max-w-lg p-6 rounded-3xl
           bg-linear-to-br from-pink-500/15 via-rose-500/10 to-pink-400/15
           border border-pink-400/30
           shadow-[0_0_30px_rgba(236,72,153,0.15)]
-          backdrop-blur-xl
-          mb-8
+          backdrop-blur-xl mb-8
         "
       >
         <div
           ref={scrollRef}
+          onScroll={handleScroll}
           className="
             max-h-64 overflow-y-auto
             whitespace-pre-line
             text-[15px] md:text-base
             leading-relaxed
             text-pink-50/90
+            pr-1
           "
         >
           {currentText}
           {showCursor && (
-            <span className="inline-block w-2 ml-1 animate-pulse text-pink-200">|</span>
+            <span className="inline-block w-2 ml-1 animate-pulse text-pink-200">
+              |
+            </span>
           )}
         </div>
       </motion.div>
 
-      {/* Next Button */}
-      <motion.div
-        className="text-center relative z-10"
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8 }}
+      {/* Button */}
+      <motion.button
+        onClick={onNext}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="
+          bg-linear-to-r from-pink-500 via-rose-500 to-pink-500
+          text-white px-10 py-4 rounded-full text-lg font-medium
+          shadow-2xl flex items-center gap-2
+        "
       >
-        <motion.button
-          className="
-            bg-linear-to-r from-pink-500 via-rose-500 to-pink-500
-            text-white px-10 py-4 text-lg rounded-full font-medium
-            shadow-2xl hover:shadow-pink-500/25
-            transition-all flex items-center gap-2
-          "
-          onClick={onNext}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <span>One more thing</span>
-          <MoveRight size={18} />
-        </motion.button>
-      </motion.div>
+        <span>One more thing</span>
+        <MoveRight size={18} />
+      </motion.button>
 
     </motion.div>
   )
