@@ -73,7 +73,7 @@ export default function MessageScreen({ onNext }) {
         clearInterval(timer)
         setShowCursor(false)
       }
-    }, 1)
+    }, 70)
 
     return () => clearInterval(timer)
   }, [autoScroll])
